@@ -2,7 +2,6 @@
 #define PIXEL_STORE_H
 
 #include <iostream>
-#include <tuple>
 
 template<typename pixelType>
 class PixelStore

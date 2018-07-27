@@ -28,10 +28,6 @@ void mainWindow(int width, int height, PixelStore<sf::Uint8> *PixelData)
         height / spriteHeight
     );
 
-    sf::Vector2i oldPos;
-    sf::Vector2i deltaPos;
-    bool mouseMoving = false;
-
     while (window.isOpen())
     {
         sf::Event event;
