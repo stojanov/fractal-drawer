@@ -1,10 +1,11 @@
 #include <thread>
 #include <iostream>
 #include <complex>
+#include <chrono>
 #include "SFML/Graphics.hpp"
 
 #include "Mandelbrot.h"
-#include "pixel_store.hpp"
+#include "PixelStore.hpp"
 
 Mandelbrot::Mandelbrot(
         const int width, 
@@ -14,7 +15,8 @@ Mandelbrot::Mandelbrot(
     ):  m_width(width),
         m_height(height),
         m_maxiter(maxiter),
-        m_threads_per_block(base_threads) {}
+        m_threads_per_block(base_threads)
+        {}
 
 float Mandelbrot::iterations(int x, int y)
 {
@@ -34,44 +36,81 @@ float Mandelbrot::iterations(int x, int y)
     return iterations;
 }
 
-void Mandelbrot::proccesRange(sf::Vector2i point1, sf::Vector2i point2, sf::Vector2i offset)
+void Mandelbrot::proccesRange(sf::Vector2i point1, sf::Vector2i point2, sf::Vector2i offset, bool *thread) 
 {
     for(int i = point1.x; i < point2.x; i++)
     {
         for(int j = point1.y; j < point2.y; j++)
         {
-            float iter = iterations(i + offset.x, j + offset.y);
+            float iter = iterations(i, j);
             float k = iter / m_maxiter;
 
-            int clr = (int) 255 * k;
+            int clr =  256 * k;
 
-            sf::Uint8 clrsf[]{ clr, clr, clr, 255 };
+            int red = clr;
+            int green = clr;
+            int blue = clr;
+
+            sf::Uint8 clrsf[]{ red, green, blue, 255 };
 
             m_store->assignToPixel(i, j, clrsf);
         }
     }
+
+    (*thread) = true;
 }
 
 
 // Offset added for future updates if they happen
 void Mandelbrot::spawn(int x, int y)
 {
-    int wK = m_width / m_threads_per_block;
-    int hK = m_height / m_threads_per_block;
+    int k = m_threads_per_block;
 
-    for(int i = 0; i < m_width; i += wK)
+    int wK = m_width / k;
+    int hK = m_height / k;
+
+    bool finished_threads[k * k];
+
+    int thread_counter = 0;
+    for(int i = 0; i < k; i++)
     {
-        for(int j = 0; j < m_height; j += hK)
+        for(int j = 0; j < k; j++)
         {
+            int widthStart = i * wK;
+            int heightStart = j * hK;
+            int widthEnd = widthStart + wK;
+            int heightEnd = heightStart + hK;
+
+            bool *this_thread = &finished_threads[thread_counter++];
+            (*this_thread) = false; 
+
             std::thread(
-                [this, i, j, wK, hK, x, y] { proccesRange(
-                    sf::Vector2i(i, j),
-                    sf::Vector2i(i + wK, j + hK),
-                    sf::Vector2i(x, y)
+                [=] { proccesRange(
+                    sf::Vector2i(widthStart, heightStart),
+                    sf::Vector2i(widthEnd, heightEnd),
+                    sf::Vector2i(x, y),
+                    this_thread
                 ); }
             ).detach();
         }
     }
+
+    // Very bad
+    bool finished = false;
+    while(!finished) // Block this thread while the others finish (exceptions not handled)
+    {
+        int i = 0;
+        while(i++ < thread_counter)
+        {
+            if(finished_threads[i] == false)
+                break;
+        }
+
+        if(i == thread_counter)
+            finished = true;
+    }
+
+    std::cout << "Done.\n";
 }
 
 void Mandelbrot::addPixelBuffer(PixelStore<sf::Uint8>* store) { m_store = store; }

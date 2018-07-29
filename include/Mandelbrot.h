@@ -2,7 +2,7 @@
 #define MANDELBROT_H
 
 #include "SFML/Graphics.hpp"
-#include "pixel_store.hpp"
+#include "PixelStore.hpp"
 
 class Mandelbrot
 {
@@ -17,7 +17,7 @@ public:
 
     void addPixelBuffer(PixelStore<sf::Uint8>* store);
 
-    void proccesRange(sf::Vector2i, sf::Vector2i, sf::Vector2i);
+    void proccesRange(sf::Vector2i, sf::Vector2i, sf::Vector2i, bool*);
 
     void start();
 
