@@ -2,28 +2,29 @@
 #define MANDELBROT_H
 
 #include "SFML/Graphics.hpp"
-#include "PixelStore.hpp"
+#include "PixelStore.h"
 
 class Mandelbrot
 {
 private:
     int m_width;
     int m_height; 
-    int m_maxiter;
-    int m_threads_per_block;
     PixelStore<sf::Uint8>* m_store;
+    
+    static int s_MAX_ITERATIONS;
+    static int s_THREADS;
+    static int iterations(int, int, int, int);
+
 public:
-    Mandelbrot(const int, const int, const int, const int);
+    Mandelbrot(const int, const int);
 
     void addPixelBuffer(PixelStore<sf::Uint8>* store);
 
-    void proccesRange(sf::Vector2i, sf::Vector2i, sf::Vector2i, bool*);
+    void proccesRange(sf::Vector2i, sf::Vector2i, sf::Vector2i);
 
     void start();
 
     void spawn(int, int);
-
-    float iterations(int, int);
 };
 
 #endif

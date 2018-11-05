@@ -1,10 +1,6 @@
 {
     "files.associations": {
-        "thread": "cpp",
-        "array": "cpp",
-        "initializer_list": "cpp",
-        "string_view": "cpp",
-        "utility": "cpp",
-        "chrono": "cpp"
+        "xiosbase": "cpp",
+        "thread": "cpp"
     }
 }
